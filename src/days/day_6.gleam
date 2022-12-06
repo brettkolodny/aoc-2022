@@ -26,8 +26,8 @@ fn find_start_index(signal: List(String), total_unique: Int, index: Int) -> Int 
     |> set.from_list()
     |> set.size()
 
-  case num_unique {
-    n if n == total_unique -> index + total_unique
+  case num_unique == total_unique {
+    True -> index + total_unique
     _ -> {
       assert Ok(rest) = list.rest(signal)
       find_start_index(rest, total_unique, index + 1)
