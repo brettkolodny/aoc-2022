@@ -4,7 +4,6 @@ import gleam/list
 import gleam/string
 import gleam/regex
 import gleam/option
-import gleam/io
 
 // TYPES ----------------------------------------------------------------------
 
@@ -15,7 +14,7 @@ type CrateMover {
 
 // SOLUTIONS ------------------------------------------------------------------
 
-pub fn pt_1(input: String) -> Int {
+pub fn pt_1(input: String) -> String {
   let #(boxes, moves) = parse_input(input)
 
   let #(new_boxes, _) =
@@ -31,11 +30,9 @@ pub fn pt_1(input: String) -> Int {
   new_boxes
   |> list.flat_map(list.take(_, 1))
   |> string.join("")
-  |> io.debug()
-  0
 }
 
-pub fn pt_2(input: String) -> Int {
+pub fn pt_2(input: String) -> String {
   let #(boxes, moves) = parse_input(input)
 
   let #(new_boxes, _) =
@@ -51,8 +48,6 @@ pub fn pt_2(input: String) -> Int {
   new_boxes
   |> list.flat_map(list.take(_, 1))
   |> string.join("")
-  |> io.debug()
-  0
 }
 
 // HELPERS --------------------------------------------------------------------
