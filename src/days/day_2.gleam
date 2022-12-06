@@ -1,12 +1,18 @@
+// IMPORTS --------------------------------------------------------------------
+
 import gleam/list
 import gleam/string
 import gleam/int
+
+// TYPES ----------------------------------------------------------------------
 
 type RPS {
   Rock
   Paper
   Scissors
 }
+
+// SOLUTIONS ------------------------------------------------------------------
 
 pub fn pt_1(input: String) -> Int {
   input
@@ -33,6 +39,8 @@ pub fn pt_2(input: String) -> Int {
   |> list.map(get_round_points)
   |> int.sum()
 }
+
+// HELPERS --------------------------------------------------------------------
 
 fn string_to_rps(s: String) {
   case s {
@@ -84,6 +92,8 @@ fn get_round_points(round: List(RPS)) {
 
   match_points + move_points
 }
+
+// PARSE INPUT ----------------------------------------------------------------
 
 fn parse_input(input: String) -> List(List(String)) {
   input

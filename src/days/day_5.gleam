@@ -1,13 +1,19 @@
+// IMPORTS --------------------------------------------------------------------
+
 import gleam/list
 import gleam/string
 import gleam/regex
 import gleam/option
 import gleam/io
 
+// TYPES ----------------------------------------------------------------------
+
 type CrateMover {
   NineThousand
   NineThousandOne
 }
+
+// SOLUTIONS ------------------------------------------------------------------
 
 pub fn pt_1(input: String) -> Int {
   let #(boxes, moves) = parse_input(input)
@@ -49,14 +55,7 @@ pub fn pt_2(input: String) -> Int {
   0
 }
 
-fn parse_input(input: String) -> #(List(List(String)), List(List(Int))) {
-  let [boxes_input, moves_input] = string.split(input, on: "\n\n")
-
-  let boxes = parse_boxes(boxes_input)
-  let moves = parse_moves(moves_input)
-
-  #(boxes, moves)
-}
+// HELPERS --------------------------------------------------------------------
 
 fn move_boxes(
   boxes: List(List(String)),
@@ -84,6 +83,17 @@ fn move_boxes(
       _ -> x
     }
   })
+}
+
+// PARSE INPUT ----------------------------------------------------------------
+
+fn parse_input(input: String) -> #(List(List(String)), List(List(Int))) {
+  let [boxes_input, moves_input] = string.split(input, on: "\n\n")
+
+  let boxes = parse_boxes(boxes_input)
+  let moves = parse_moves(moves_input)
+
+  #(boxes, moves)
 }
 
 fn parse_boxes(input: String) -> List(List(String)) {
@@ -138,6 +148,8 @@ fn parse_moves(moves_input: String) -> List(List(Int)) {
     )
   })
 }
+
+// EXTERNAL -------------------------------------------------------------------
 
 external fn unsafe_string_to_int(string: String) -> Int =
   "erlang" "binary_to_integer"

@@ -1,9 +1,13 @@
+// IMPORTS --------------------------------------------------------------------
+
 import gleam/list
 import gleam/string
 import gleam/int
 import gleam/map
 import gleam/set
 import gleam/option.{Some}
+
+// SOLUTIONS ------------------------------------------------------------------
 
 pub fn pt_1(input: String) -> Int {
   input
@@ -39,10 +43,7 @@ pub fn pt_2(input: String) -> Int {
   |> int.sum()
 }
 
-fn parse_input(input: String) -> List(String) {
-  input
-  |> string.split("\n")
-}
+// HELPERS --------------------------------------------------------------------
 
 fn split_list_in_half(l: List(a)) -> List(List(a)) {
   assert Ok(middle_index) =
@@ -110,4 +111,11 @@ fn letter_to_score(l: String) -> Int {
 
   let [first, _] = string.split(letters, l)
   string.length(first) + 1
+}
+
+// PARSE INPUT ----------------------------------------------------------------
+
+fn parse_input(input: String) -> List(String) {
+  input
+  |> string.split("\n")
 }

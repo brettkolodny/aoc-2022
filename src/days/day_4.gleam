@@ -1,7 +1,11 @@
+// IMPORTS --------------------------------------------------------------------
+
 import gleam/int
 import gleam/list
 import gleam/set
 import gleam/string
+
+// SOLUTIONS ------------------------------------------------------------------
 
 pub fn pt_1(input: String) -> Int {
   input
@@ -44,6 +48,8 @@ pub fn pt_2(input: String) -> Int {
   })
   |> int.sum()
 }
+
+// PARSE INPUT ----------------------------------------------------------------
 
 fn parse_input(input: String) {
   input
