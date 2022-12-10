@@ -1,9 +1,12 @@
+// IMPORTS --------------------------------------------------------------------
+
 import gleam/list
 import gleam/int
 import gleam/string
 import gleam/float
-import gleam/io
-import gleam/set.{Set}
+import gleam/set
+
+// TYPES ----------------------------------------------------------------------
 
 type Coordinate =
   #(Int, Int)
@@ -13,147 +16,159 @@ type Direction {
   Down
   Left
   Right
+  UpRight
+  UpLeft
+  DownRight
+  DownLeft
   NoMove
 }
 
 type Move =
   #(Direction, Int)
 
-const tail_init = #(
+const rope_init = #(
   #(0, 0),
-  #(0, 0),
-  #(0, 0),
-  #(0, 0),
-  #(0, 0),
-  #(0, 0),
-  #(0, 0),
-  #(0, 0),
-  #(0, 0),
+  [
+    #(0, 0),
+    #(0, 0),
+    #(0, 0),
+    #(0, 0),
+    #(0, 0),
+    #(0, 0),
+    #(0, 0),
+    #(0, 0),
+    #(0, 0),
+  ],
 )
+
+// SOLUTIONS ------------------------------------------------------------------
 
 pub fn pt_1(input: String) {
   input
   |> parse_input()
-  |> process_moves(#(#(0, 0), #(0, 0)), set.new())
+  |> process_moves(#(#(0, 0), [#(0, 0)]), [])
+  |> list.map(fn(rope) {
+    let #(_, tail) = rope
+    assert Ok(end_of_tail) = list.at(tail, list.length(tail) - 1)
+    end_of_tail
+  })
+  |> set.from_list()
   |> set.size()
 }
 
 pub fn pt_2(input: String) {
   input
   |> parse_input()
-  |> process_moves(#(#(0, 0), #(0, 0)), set.new())
+  |> process_moves(rope_init, [])
+  |> list.map(fn(rope) {
+    let #(_, tail) = rope
+    assert Ok(end_of_tail) = list.at(tail, list.length(tail) - 1)
+    end_of_tail
+  })
+  |> set.from_list()
   |> set.size()
 }
 
+// HELPERS --------------------------------------------------------------------
+
 fn process_moves(
   moves: List(Move),
-  current_coordinates: #(Coordinate, Coordinate),
-  all_tail_coordinates: Set(Coordinate),
-) -> Set(Coordinate) {
+  rope: #(Coordinate, List(Coordinate)),
+  all_tail_coordinates: List(#(Coordinate, List(Coordinate))),
+) -> List(#(Coordinate, List(Coordinate))) {
   case moves {
-    [] -> set.insert(all_tail_coordinates, #(0, 0))
+    [] -> [rope_init, ..all_tail_coordinates]
     [move, ..moves] -> {
-      let next_coordinates = get_next_coordinates(move, current_coordinates)
-      let all_tail_coordinates =
-        set.insert(all_tail_coordinates, next_coordinates.1)
+      let next_coordinates = get_next_coordinates(move, rope)
+      let all_tail_coordinates = [next_coordinates, ..all_tail_coordinates]
       process_moves(moves, next_coordinates, all_tail_coordinates)
-    }
-  }
-}
-
-fn get_all_new_coordinates(
-  old_coordinates: List(Coordinate),
-  new_coordinates: List(Coordinate),
-  move: Move,
-) -> List(Coordinate) {
-  case old_coordinates {
-    [] -> new_coordinates
-    [tail] -> [tail, ..new_coordinates]
-    [head, tail] -> {
-      let #(new_tail_coordinate, _) =
-        get_next_tail_coordinate_and_direction(head, tail, move.0)
-      [new_tail_coordinate, ..new_coordinates]
-    }
-    [head, tail, ..rest] -> {
-      let #(new_tail_coordinate, direction) =
-        get_next_tail_coordinate_and_direction(head, tail, move.0)
-      [
-        new_tail_coordinate,
-        ..get_all_new_coordinates(
-          [tail, ..rest],
-          new_coordinates,
-          #(direction, 1),
-        )
-      ]
     }
   }
 }
 
 fn get_next_coordinates(
   move: Move,
-  head_tail: #(Coordinate, Coordinate),
-) -> #(Coordinate, Coordinate) {
-  let #(head_coord, tail_coord) = head_tail
+  head_tail: #(Coordinate, List(Coordinate)),
+) -> #(Coordinate, List(Coordinate)) {
+  let #(head_coord, tail) = head_tail
 
-  let #(new_head_coordinate, direction) =
-    get_next_head_coordinate_and_direction(move, head_coord)
-  let #(new_tail_coordinate, _) =
-    get_next_tail_coordinate_and_direction(
+  let new_head_coordinate = get_next_head_coordinate(move, head_coord)
+
+  let #(_, new_tail) =
+    tail
+    |> list.map_fold(
       new_head_coordinate,
-      tail_coord,
-      direction,
+      fn(head, tail_coordinate) {
+        let new_tail_coordinate =
+          get_next_tail_coordinate(head, tail_coordinate)
+
+        #(new_tail_coordinate, new_tail_coordinate)
+      },
     )
 
-  #(new_head_coordinate, new_tail_coordinate)
+  #(new_head_coordinate, new_tail)
 }
 
-fn get_next_head_coordinate_and_direction(
-  move: Move,
-  current_head: Coordinate,
-) -> #(Coordinate, Direction) {
+fn get_next_head_coordinate(move: Move, current_head: Coordinate) -> Coordinate {
   let #(head_x, head_y) = current_head
 
   case move {
-    #(Up, m) -> #(#(head_x, head_y + m), Up)
-    #(Down, m) -> #(#(head_x, head_y - m), Down)
-    #(Left, m) -> #(#(head_x - m, head_y), Left)
-    #(Right, m) -> #(#(head_x + m, head_y), Right)
+    #(Up, m) -> #(head_x, head_y + m)
+    #(Down, m) -> #(head_x, head_y - m)
+    #(Left, m) -> #(head_x - m, head_y)
+    #(Right, m) -> #(head_x + m, head_y)
   }
 }
 
-fn get_next_tail_coordinate_and_direction(
+fn get_next_tail_coordinate(
   head_location: Coordinate,
   tail_location: Coordinate,
-  direction: Direction,
-) -> #(Coordinate, Direction) {
-  let #(head_x, head_y) = head_location
+) -> Coordinate {
+  let #(tail_x, tail_y) = tail_location
+
+  let direction = get_direction(head: head_location, tail: tail_location)
 
   let new_coordinate = case distance(head_location, tail_location) >. 1.0 {
     True ->
       case direction {
-        Up -> #(head_x, head_y - 1)
-        Down -> #(head_x, head_y + 1)
-        Left -> #(head_x + 1, head_y)
-        Right -> #(head_x - 1, head_y)
+        Up -> #(tail_x, tail_y + 1)
+        UpLeft -> #(tail_x - 1, tail_y + 1)
+        UpRight -> #(tail_x + 1, tail_y + 1)
+        Down -> #(tail_x, tail_y - 1)
+        DownRight -> #(tail_x + 1, tail_y - 1)
+        DownLeft -> #(tail_x - 1, tail_y - 1)
+        Left -> #(tail_x - 1, tail_y)
+        Right -> #(tail_x + 1, tail_y)
         NoMove -> tail_location
       }
     False -> tail_location
   }
 
-  let direction = get_direction(from: tail_location, to: new_coordinate)
-  #(new_coordinate, direction)
+  new_coordinate
 }
 
 fn get_direction(
-  from old_coordinate: Coordinate,
-  to new_coordinate: Coordinate,
+  head new_coordinate: Coordinate,
+  tail old_coordinate: Coordinate,
 ) -> Direction {
-  case new_coordinate, old_coordinate {
-    _, _ if new_coordinate.1 > old_coordinate.1 -> Up
-    _, _ if new_coordinate.1 < old_coordinate.1 -> Down
-    _, _ if new_coordinate.0 > old_coordinate.0 -> Right
-    _, _ if new_coordinate.0 < old_coordinate.0 -> Left
-    _, _ -> NoMove
+  case True {
+    _ if new_coordinate.0 > old_coordinate.0 && new_coordinate.1 > old_coordinate.1 ->
+      UpRight
+    _ if new_coordinate.0 < old_coordinate.0 && new_coordinate.1 > old_coordinate.1 ->
+      UpLeft
+    _ if new_coordinate.0 > old_coordinate.0 && new_coordinate.1 < old_coordinate.1 ->
+      DownRight
+    _ if new_coordinate.0 < old_coordinate.0 && new_coordinate.1 < old_coordinate.1 ->
+      DownLeft
+    _ if new_coordinate.0 == old_coordinate.0 && new_coordinate.1 > old_coordinate.1 ->
+      Up
+    _ if new_coordinate.0 == old_coordinate.0 && new_coordinate.1 < old_coordinate.1 ->
+      Down
+    _ if new_coordinate.0 > old_coordinate.0 && new_coordinate.1 == old_coordinate.1 ->
+      Right
+    _ if new_coordinate.0 < old_coordinate.0 && new_coordinate.1 == old_coordinate.1 ->
+      Left
+    _ -> NoMove
   }
 }
 
@@ -173,6 +188,8 @@ fn distance(head_coordinate: Coordinate, tail_coordinate: Coordinate) -> Float {
     }
   }
 }
+
+// PARSING --------------------------------------------------------------------
 
 fn duplicate_moves(move: Move, moves: List(Move)) -> List(Move) {
   case move {
