@@ -19,7 +19,7 @@ type Direction {
 type Move =
   #(Direction, Int)
 
-const tail_init = [
+const tail_init = #(
   #(0, 0),
   #(0, 0),
   #(0, 0),
@@ -29,7 +29,7 @@ const tail_init = [
   #(0, 0),
   #(0, 0),
   #(0, 0),
-]
+)
 
 pub fn pt_1(input: String) {
   input
@@ -41,9 +41,7 @@ pub fn pt_1(input: String) {
 pub fn pt_2(input: String) {
   input
   |> parse_input()
-  |> process_moves_pt2(tail_init, [])
-  |> io.debug()
-  |> set.from_list()
+  |> process_moves(#(#(0, 0), #(0, 0)), set.new())
   |> set.size()
 }
 
@@ -63,22 +61,6 @@ fn process_moves(
   }
 }
 
-fn process_moves_pt2(
-  moves: List(Move),
-  current_coordinates: List(Coordinate),
-  all_tail_coordinates: List(Coordinate),
-) -> List(Coordinate) {
-  case moves {
-    [] -> [#(0, 0), ..all_tail_coordinates]
-    [move, ..moves] -> {
-      // let next_coordinates = get_next_coordinates(move, current_coordinates)
-      let next_coordinates = current_coordinates
-      // let all_tail_coordinates = [next_coordinates.1, ..all_tail_coordinates]
-      process_moves_pt2(moves, next_coordinates, all_tail_coordinates)
-    }
-  }
-}
-
 fn get_all_new_coordinates(
   old_coordinates: List(Coordinate),
   new_coordinates: List(Coordinate),
@@ -86,8 +68,9 @@ fn get_all_new_coordinates(
 ) -> List(Coordinate) {
   case old_coordinates {
     [] -> new_coordinates
+    [tail] -> [tail, ..new_coordinates]
     [head, tail] -> {
-      let #(new_tail_coordinate, direction) =
+      let #(new_tail_coordinate, _) =
         get_next_tail_coordinate_and_direction(head, tail, move.0)
       [new_tail_coordinate, ..new_coordinates]
     }
